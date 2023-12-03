@@ -841,3 +841,25 @@ function fingerprint(callable $callback, string $fingerprint): void
         }
     }
 }
+
+/**
+ * @param callable():bool $callback
+ */
+function wait_for(callable $callback, int $timeout = 10, int $interval = 1): bool
+{
+    if ($interval <= 0) {
+        throw fix_exception(new \InvalidArgumentException(sprintf('Interval "%d" must be greater than 0.', $interval)));
+    }
+    if ($timeout < $interval) {
+        throw fix_exception(new \InvalidArgumentException(sprintf('Timeout "%d" must be greater than or equal to interval "%d".', $timeout, $interval)));
+    }
+    $start = time();
+    while (!$callback()) {
+        if (time() - $start > $timeout) {
+            return false;
+        }
+        sleep($interval);
+    }
+
+    return true;
+}
